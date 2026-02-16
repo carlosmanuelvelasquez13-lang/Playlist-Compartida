@@ -17,118 +17,109 @@
 
         body { 
             font-family: 'Poppins', sans-serif; background: var(--fondo); 
-            display: flex; justify-content: center; padding: 15px; margin: 0; 
-            transition: all 0.5s ease; color: var(--texto);
+            background-image: radial-gradient(at 0% 0%, rgba(52, 152, 219, 0.05) 0px, transparent 50%),
+                              radial-gradient(at 100% 100%, rgba(46, 204, 113, 0.05) 0px, transparent 50%);
+            display: flex; justify-content: center; align-items: flex-start; padding: 40px 15px; margin: 0; 
+            min-height: 100vh; color: var(--texto);
         }
         
         .container { 
-            background: var(--card-bg); width: 100%; max-width: 400px; padding: 25px 20px; 
-            border-radius: 20px; box-shadow: 0 5px 25px rgba(0,0,0,0.03); text-align: center; 
-            position: relative; min-height: 85vh;
-        }
-
-        .room-title { font-family: 'Dancing Script', cursive; font-size: 1.8rem; color: var(--tema); margin: 0; }
-        
-        #total-count { font-size: 0.65em; letter-spacing: 2px; opacity: 0.5; font-weight: 600; margin-bottom: 15px; text-transform: uppercase; }
-
-        /* BUSCADOR COMPACTO Y CENTRADO */
-        .search-container { 
-            display: flex; 
-            justify-content: center; 
-            margin-bottom: 20px; 
-        }
-        .search-box {
+            background: rgba(255, 255, 255, 0.95);
+            width: 100%; max-width: 900px; padding: 35px; 
+            border-radius: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); text-align: center; 
             position: relative;
-            width: 85%; /* Más pequeño para centrar visualmente */
-        }
-        .input-search { 
-            width: 100%; 
-            padding: 10px 15px 10px 35px; /* Espacio para la lupa */
-            border-radius: 25px; 
-            border: 1px solid #eee; 
-            background: #fafafa; 
-            font-family: 'Poppins'; 
-            font-size: 0.75em; 
-            outline: none; 
-            transition: 0.3s;
-            box-sizing: border-box;
-        }
-        .input-search:focus { border-color: var(--tema); background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        
-        /* ICONO DE LUPA */
-        .search-icon {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 0.8em;
-            opacity: 0.4;
-            pointer-events: none;
+            contain: layout; /* Optimización de renderizado */
         }
 
-        .legend { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; font-size: 0.55em; font-weight: 600; opacity: 0.7; }
-        .legend-item { display: flex; align-items: center; gap: 3px; }
-        .dot-l { width: 8px; height: 8px; border-radius: 50%; }
+        #login-screen { max-width: 320px; margin: 0 auto; padding: 20px 0; }
+        #login-screen h2 { font-weight: 600; font-size: 1.5rem; margin-bottom: 25px; color: var(--tema); }
+        .login-icon { font-size: 3rem; margin-bottom: 10px; display: block; }
+
+        .room-title { font-family: 'Dancing Script', cursive; font-size: 2.2rem; color: var(--tema); margin: 0; }
+        #total-count { font-size: 0.7em; letter-spacing: 2px; opacity: 0.5; font-weight: 700; margin-bottom: 20px; text-transform: uppercase; }
+
+        #play-all-btn {
+            display: inline-block; background: var(--tema); color: white; padding: 12px 20px;
+            border-radius: 12px; text-decoration: none; font-size: 0.8em; font-weight: 600;
+            margin-bottom: 25px; transition: transform 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .search-container { display: flex; justify-content: center; margin-bottom: 25px; }
+        .search-box { position: relative; width: 100%; max-width: 400px; }
+        .input-search { 
+            width: 100%; padding: 12px 15px 12px 40px; border-radius: 25px; 
+            border: 1px solid #eee; background: #fff; font-family: 'Poppins'; 
+            font-size: 0.85em; outline: none; box-sizing: border-box;
+        }
+        .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.3; }
+
+        .legend { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; font-size: 0.6em; font-weight: 600; opacity: 0.7; }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .dot-l { width: 10px; height: 10px; border-radius: 50%; }
 
         .input-formal { 
-            width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 10px; 
-            border: 1px solid #eee; box-sizing: border-box; font-family: 'Poppins'; font-size: 0.85em;
+            width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 12px; 
+            border: 1px solid #eee; box-sizing: border-box; font-family: 'Poppins'; font-size: 0.9em;
         }
         .btn-tema { 
-            width: 100%; padding: 12px; border-radius: 10px; border: none; 
+            width: 100%; padding: 14px; border-radius: 12px; border: none; 
             background: var(--tema); color: white; font-weight: 600; cursor: pointer;
         }
 
-        #add-form { display: none; margin-bottom: 20px; padding: 15px; background: #fafafa; border-radius: 12px; animation: fadeIn 0.3s; }
+        #add-form { display: none; margin-bottom: 30px; padding: 20px; background: #fafafa; border-radius: 15px; text-align: left; border: 1px solid #f0f0f0; }
+
+        #playlist { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+            gap: 12px; 
+            text-align: left; 
+        }
 
         .letter-divider {
-            display: flex; align-items: center; font-size: 0.65em; color: var(--tema);
-            opacity: 0.4; margin: 20px 0 8px; font-weight: 700;
+            grid-column: 1 / -1; display: flex; align-items: center; font-size: 0.7em; 
+            color: var(--tema); opacity: 0.4; margin: 25px 0 10px; font-weight: 700;
         }
-        .letter-divider::after { content: ""; flex: 1; height: 1px; background: var(--tema); margin-left: 10px; opacity: 0.1; }
+        .letter-divider::after { content: ""; flex: 1; height: 1px; background: var(--tema); margin-left: 15px; opacity: 0.1; }
 
         .song-card { 
-            display: flex; align-items: center; padding: 8px 12px; border-radius: 10px; 
-            margin-bottom: 6px; text-align: left; background: #fff; border: 1px solid #f5f5f5;
+            display: flex; align-items: center; padding: 10px 15px; border-radius: 12px; 
+            background: #fff; border: 1px solid #f0f0f0;
+            contain: content; /* Mejora rendimiento de scroll */
         }
-        .song-card img { width: 35px; height: 35px; border-radius: 6px; margin-right: 12px; object-fit: cover; }
-        .song-info b { font-size: 0.8em; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .song-card img { width: 45px; height: 45px; border-radius: 8px; margin-right: 15px; object-fit: cover; background: #f0f0f0; }
+        .song-info { flex: 1; overflow: hidden; }
+        .song-info b { font-size: 0.85em; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
-        .pienso { border-right: 4px solid #fdd835; background: #fffde7; }
-        .gusta { border-right: 4px solid #66bb6a; background: #e8f5e9; }
-        .deprime { border-right: 4px solid #42a5f5; background: #e3f2fd; }
-        .favorita { border-right: 4px solid #ff5252; background: #ffebee; }
+        .pienso { border-left: 5px solid #fdd835; }
+        .gusta { border-left: 5px solid #66bb6a; }
+        .deprime { border-left: 5px solid #42a5f5; }
+        .favorita { border-left: 5px solid #ff5252; }
 
         .icon-btn { 
-            position: fixed; bottom: 20px; cursor: pointer; background: white; 
-            width: 40px; height: 40px; border-radius: 50%; display: flex; 
-            align-items: center; justify-content: center; box-shadow: 0 3px 10px rgba(0,0,0,0.1); 
-            z-index: 1000; border: none; font-size: 1rem;
+            position: fixed; bottom: 25px; cursor: pointer; background: white; 
+            width: 50px; height: 50px; border-radius: 50%; display: flex; 
+            align-items: center; justify-content: center; box-shadow: 0 5px 20px rgba(0,0,0,0.1); 
+            z-index: 1000; border: none; font-size: 1.2rem;
         }
-        #add-btn-toggle { right: 20px; background: var(--tema); color: white; display: none; }
-        #config-btn { right: 70px; display: none; color: #888; }
-        #papiro-btn { left: 20px; display: none; color: #888; }
+        #add-btn-toggle { right: 25px; background: var(--tema); color: white; display: none; }
+        #config-btn { right: 85px; display: none; color: #888; }
 
         .color-picker {
-            display: none; position: fixed; bottom: 70px; right: 20px; 
-            background: white; padding: 10px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); 
-            z-index: 1001; grid-template-columns: repeat(3, 1fr); gap: 8px;
+            display: none; position: fixed; bottom: 85px; right: 25px; 
+            background: white; padding: 12px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+            z-index: 1001; grid-template-columns: repeat(3, 1fr); gap: 10px;
         }
-        .dot { width: 22px; height: 22px; border-radius: 50%; cursor: pointer; border: 1px solid #eee; }
+        .dot { width: 25px; height: 25px; border-radius: 50%; cursor: pointer; border: 1px solid #eee; }
 
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @media (max-width: 600px) {
+            #playlist { grid-template-columns: 1fr; }
+            .container { padding: 20px; }
+            body { padding: 15px; }
+        }
     </style>
 </head>
 <body>
 
-<div id="poema-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.2); display:none; justify-content:center; align-items:center; z-index:2000; backdrop-filter:blur(2px);">
-    <div style="background:#fffdf5; padding:30px; border-radius:15px; width:80%; max-width:300px; text-align:center;">
-        <div id="texto-poema" style="font-family:'Dancing Script'; font-size:1.5rem; margin-bottom:15px;"></div>
-        <button class="btn-tema" style="font-size:0.8em;" onclick="togglePoema(false)">Entendido</button>
-    </div>
-</div>
-
-<button id="papiro-btn" class="icon-btn" onclick="togglePoema(true)">📜</button>
 <button id="config-btn" class="icon-btn" onclick="toggleConfig()">⚙️</button>
 <button id="add-btn-toggle" class="icon-btn" onclick="toggleAddForm()">+</button>
 
@@ -143,10 +134,11 @@
 
 <div class="container">
     <div id="login-screen">
-        <h2 style="font-weight: 300;">Playlist Privada</h2>
+        <span class="login-icon">🎧</span>
+        <h2>Playlist Privada</h2>
         <input type="text" id="room-name" class="input-formal" placeholder="Nombre de la Sala">
         <input type="password" id="room-pass" class="input-formal" placeholder="Contraseña">
-        <button class="btn-tema" onclick="accessRoom()">Entrar</button>
+        <button class="btn-tema" onclick="accessRoom()">Entrar a la Sala</button>
     </div>
 
     <div id="main-content" style="display:none;">
@@ -161,28 +153,31 @@
 
         <div id="total-count">0 CANCIONES</div>
 
+        <a id="play-all-btn" href="#" target="_blank" style="display:none;">▶️ REPRODUCIR TODA LA SALA</a>
+
         <div class="search-container">
             <div class="search-box">
                 <span class="search-icon">🔍</span>
-                <input type="text" id="search-input" class="input-search" placeholder="Buscar canción..." oninput="render()">
+                <input type="text" id="search-input" class="input-search" placeholder="Buscar artista o canción..." oninput="render()">
             </div>
         </div>
         
         <div id="add-form">
-            <input type="text" id="song-name" class="input-formal" placeholder="Nombre canción">
-            <input type="text" id="song-url" class="input-formal" placeholder="URL YouTube">
+            <label style="font-size:0.7em; font-weight:700; color:var(--tema); margin-left:5px;">NUEVA CANCIÓN</label>
+            <input type="text" id="song-name" class="input-formal" placeholder="Nombre (Ej: Artista - Canción)">
+            <input type="text" id="song-url" class="input-formal" placeholder="Link de YouTube">
             <select id="song-mood" class="input-formal">
                 <option value="pienso">Pienso en ti 💭</option>
                 <option value="gusta">Me gusta 👍</option>
                 <option value="deprime">Me deprime 💙</option>
                 <option value="favorita">Mi Favorita ❤️</option>
             </select>
-            <button class="btn-tema" style="font-size:0.8em;" onclick="saveSong()">Guardar</button>
+            <button class="btn-tema" style="font-size:0.8em;" onclick="saveSong()">Añadir a la lista</button>
         </div>
 
         <div id="playlist"></div>
         <div style="height: 60px;"></div>
-        <span style="font-size: 0.6em; cursor: pointer; opacity: 0.3;" onclick="location.reload()">CERRAR SESIÓN</span>
+        <span style="font-size: 0.6em; cursor: pointer; opacity: 0.3; letter-spacing: 1px;" onclick="location.reload()">CERRAR SESIÓN</span>
     </div>
 </div>
 
@@ -202,7 +197,6 @@
     let currentRoom = "";
     let allSongs = [];
 
-    function togglePoema(show) { document.getElementById('poema-overlay').style.display = show ? 'flex' : 'none'; }
     function toggleConfig() { const p = document.getElementById('picker'); p.style.display = p.style.display === 'grid' ? 'none' : 'grid'; }
     function toggleAddForm() {
         const f = document.getElementById('add-form');
@@ -223,11 +217,11 @@
             const d = s.val();
             if(d && d.password === pass) startSession(name);
             else if(!d) {
-                if(confirm("¿Crear esta sala?")) {
+                if(confirm("¿Crear esta nueva sala?")) {
                     db.ref('salas/' + name).set({ password: pass, theme: '#34495e', bg: '#f4f7f6' });
                     startSession(name);
                 }
-            } else alert("Clave incorrecta");
+            } else alert("Contraseña incorrecta");
         });
     }
 
@@ -243,7 +237,6 @@
             if(d && d.theme) applyTheme(d.theme, d.bg);
         });
 
-        document.getElementById('texto-poema').innerText = "Tu música, tu espacio.";
         db.ref('canciones/' + currentRoom).on('value', (snap) => {
             const d = snap.val();
             allSongs = d ? Object.keys(d).map(k => ({ id: k, ...d[k] })) : [];
@@ -256,7 +249,7 @@
         const u = document.getElementById('song-url').value.trim();
         const m = document.getElementById('song-mood').value;
         if (!n || !u) return;
-        const idV = u.includes('v=') ? u.split('v=')[1].substring(0,11) : u.split('/').pop();
+        const idV = u.includes('v=') ? u.split('v=')[1].substring(0,11) : u.split('/').pop().split('?')[0];
         db.ref('canciones/' + currentRoom).push({ name: n, url: u, mood: m, img: `https://img.youtube.com/vi/${idV}/mqdefault.jpg` });
         document.getElementById('song-name').value = ''; document.getElementById('song-url').value = '';
         toggleAddForm();
@@ -265,13 +258,22 @@
     function render() {
         const list = document.getElementById('playlist');
         const count = document.getElementById('total-count');
+        const playAllBtn = document.getElementById('play-all-btn');
         const searchTerm = document.getElementById('search-input').value.toLowerCase();
         
-        list.innerHTML = '';
+        // OPTIMIZACIÓN: Fragmento de documento para minimizar reflujos del navegador
+        const fragment = document.createDocumentFragment();
+        
         const filteredSongs = allSongs.filter(s => s.name.toLowerCase().includes(searchTerm));
         filteredSongs.sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
         
         count.innerText = allSongs.length + (allSongs.length === 1 ? " CANCIÓN" : " CANCIONES");
+
+        if (allSongs.length > 0) {
+            const ids = allSongs.map(s => s.url.includes('v=') ? s.url.split('v=')[1].substring(0,11) : s.url.split('/').pop().split('?')[0]);
+            playAllBtn.href = `https://www.youtube.com/watch_videos?video_ids=${ids.slice(0, 50).join(',')}`;
+            playAllBtn.style.display = 'inline-block';
+        }
 
         let currentLetter = "";
         filteredSongs.forEach(s => {
@@ -283,17 +285,29 @@
                 const div = document.createElement('div');
                 div.className = 'letter-divider';
                 div.innerText = currentLetter;
-                list.appendChild(div);
+                fragment.appendChild(div);
             }
             
             const card = document.createElement('div');
             card.className = `song-card ${s.mood}`;
-            card.innerHTML = `<img src="${s.img}"><div class="song-info"><a href="${s.url}" target="_blank" style="text-decoration:none; color:inherit;"><b>${s.name}</b></a></div><button style="background:none; border:none; color:#ddd; cursor:pointer;" onclick="eliminar('${s.id}')">✕</button>`;
-            list.appendChild(card);
+            // OPTIMIZACIÓN: Lazy loading nativo para las miniaturas
+            card.innerHTML = `
+                <img src="${s.img}" loading="lazy" width="45" height="45">
+                <div class="song-info">
+                    <a href="${s.url}" target="_blank" style="text-decoration:none; color:inherit;">
+                        <b>${s.name}</b>
+                    </a>
+                </div>
+                <button style="background:none; border:none; color:#eee; cursor:pointer; font-size:12px; margin-left:10px;" onclick="eliminar('${s.id}')">✕</button>
+            `;
+            fragment.appendChild(card);
         });
+
+        list.innerHTML = '';
+        list.appendChild(fragment);
     }
 
-    function eliminar(id) { if(confirm("¿Eliminar?")) db.ref('canciones/' + currentRoom + '/' + id).remove(); }
+    function eliminar(id) { if(confirm("¿Eliminar canción?")) db.ref('canciones/' + currentRoom + '/' + id).remove(); }
 </script>
 </body>
 </html>
