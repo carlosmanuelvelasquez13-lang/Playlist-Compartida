@@ -28,14 +28,14 @@
             width: 100%; max-width: 900px; padding: 35px; 
             border-radius: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); text-align: center; 
             position: relative;
-            contain: layout; /* Optimización de renderizado */
+            contain: layout;
         }
 
         #login-screen { max-width: 320px; margin: 0 auto; padding: 20px 0; }
         #login-screen h2 { font-weight: 600; font-size: 1.5rem; margin-bottom: 25px; color: var(--tema); }
         .login-icon { font-size: 3rem; margin-bottom: 10px; display: block; }
 
-        .room-title { font-family: 'Dancing Script', cursive; font-size: 2.2rem; color: var(--tema); margin: 0; }
+        .room-title { font-family: 'Dancing Script', cursive; font-size: 2.2rem; color: var(--tema); margin: 0; cursor: pointer; }
         #total-count { font-size: 0.7em; letter-spacing: 2px; opacity: 0.5; font-weight: 700; margin-bottom: 20px; text-transform: uppercase; }
 
         #play-all-btn {
@@ -82,14 +82,28 @@
         .letter-divider::after { content: ""; flex: 1; height: 1px; background: var(--tema); margin-left: 15px; opacity: 0.1; }
 
         .song-card { 
-            display: flex; align-items: center; padding: 10px 15px; border-radius: 12px; 
-            background: #fff; border: 1px solid #f0f0f0;
-            contain: content; /* Mejora rendimiento de scroll */
+            display: flex; flex-direction: column; padding: 15px; border-radius: 12px; 
+            background: #fff; border: 1px solid #f0f0f0; transition: background 0.2s;
         }
+        .song-main { display: flex; align-items: center; width: 100%; }
         .song-card img { width: 45px; height: 45px; border-radius: 8px; margin-right: 15px; object-fit: cover; background: #f0f0f0; }
         .song-info { flex: 1; overflow: hidden; }
         .song-info b { font-size: 0.85em; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
+        /* ESTILOS NUEVOS PARA LOS BOTONES DE ACCIÓN */
+        .actions-wrapper { display: flex; align-items: center; }
+        .action-btns { display: flex; opacity: 0; transition: opacity 0.3s; gap: 12px; margin-left: 10px; }
+        .song-card:hover .action-btns { opacity: 1; } /* Aparece en PC al pasar el ratón */
+        .action-btn { background: none; border: none; cursor: pointer; padding: 0; font-size: 14px; transition: transform 0.2s; }
+        .action-btn:hover { transform: scale(1.2); }
+        .mobile-options { display: none; background: none; border: none; color: #ccc; cursor: pointer; font-size: 1.4rem; padding: 0 5px; margin-left: 10px; }
+
+        .comment-display { 
+            font-size: 0.7em; margin-top: 8px; padding-top: 8px; border-top: 1px solid #f9f9f9; 
+            color: #888; font-style: italic; cursor: pointer; transition: color 0.2s;
+        }
+        .comment-display:hover { color: var(--tema); }
+
         .pienso { border-left: 5px solid #fdd835; }
         .gusta { border-left: 5px solid #66bb6a; }
         .deprime { border-left: 5px solid #42a5f5; }
@@ -111,10 +125,13 @@
         }
         .dot { width: 25px; height: 25px; border-radius: 50%; cursor: pointer; border: 1px solid #eee; }
 
+        /* ADAPTACIÓN PARA MÓVILES */
         @media (max-width: 600px) {
             #playlist { grid-template-columns: 1fr; }
-            .container { padding: 20px; }
-            body { padding: 15px; }
+            .action-btns { display: none; opacity: 1; } /* Ocultos por defecto, pero con opacidad 1 para cuando se muestren */
+            .mobile-options { display: block; } /* Mostrar botón de 3 puntos */
+            .song-card.active-actions .action-btns { display: flex; } /* Mostrar botones al activar */
+            .song-card.active-actions .mobile-options { display: none; } /* Ocultar 3 puntos al activar */
         }
     </style>
 </head>
@@ -142,7 +159,7 @@
     </div>
 
     <div id="main-content" style="display:none;">
-        <h1 id="display-room-name" class="room-title">SALA</h1>
+        <h1 id="display-room-name" class="room-title" onclick="editRoomName()">SALA</h1>
         
         <div class="legend">
             <div class="legend-item"><div class="dot-l" style="background:#fdd835"></div> Pienso en ti</div>
@@ -153,7 +170,7 @@
 
         <div id="total-count">0 CANCIONES</div>
 
-        <a id="play-all-btn" href="#" target="_blank" style="display:none;">▶️ REPRODUCIR TODA LA SALA</a>
+        <a id="play-all-btn" href="#" target="_blank" style="display:none;">▶️ REPRODUCIR TODA LA SALA (RANDOM)</a>
 
         <div class="search-container">
             <div class="search-box">
@@ -163,7 +180,7 @@
         </div>
         
         <div id="add-form">
-            <label style="font-size:0.7em; font-weight:700; color:var(--tema); margin-left:5px;">NUEVA CANCIÓN</label>
+            <label id="form-title" style="font-size:0.7em; font-weight:700; color:var(--tema); margin-left:5px;">NUEVA CANCIÓN</label>
             <input type="text" id="song-name" class="input-formal" placeholder="Nombre (Ej: Artista - Canción)">
             <input type="text" id="song-url" class="input-formal" placeholder="Link de YouTube">
             <select id="song-mood" class="input-formal">
@@ -172,7 +189,7 @@
                 <option value="deprime">Me deprime 💙</option>
                 <option value="favorita">Mi Favorita ❤️</option>
             </select>
-            <button class="btn-tema" style="font-size:0.8em;" onclick="saveSong()">Añadir a la lista</button>
+            <button id="save-btn" class="btn-tema" style="font-size:0.8em;" onclick="saveSong()">Guardar Canción</button>
         </div>
 
         <div id="playlist"></div>
@@ -196,17 +213,34 @@
     const db = firebase.database();
     let currentRoom = "";
     let allSongs = [];
+    let editingSongId = null;
 
     function toggleConfig() { const p = document.getElementById('picker'); p.style.display = p.style.display === 'grid' ? 'none' : 'grid'; }
+    
     function toggleAddForm() {
         const f = document.getElementById('add-form');
         const b = document.getElementById('add-btn-toggle');
-        f.style.display = f.style.display === 'block' ? 'none' : 'block';
-        b.innerText = f.style.display === 'block' ? '✕' : '+';
+        
+        if (f.style.display === 'block') {
+            f.style.display = 'none';
+            b.innerText = '+';
+            editingSongId = null;
+            document.getElementById('song-name').value = ''; 
+            document.getElementById('song-url').value = '';
+            document.getElementById('form-title').innerText = 'NUEVA CANCIÓN';
+        } else {
+            f.style.display = 'block';
+            b.innerText = '✕';
+        }
     }
 
     function changeTheme(p, bg) { db.ref('salas/' + currentRoom).update({ theme: p, bg: bg }); document.getElementById('picker').style.display = 'none'; }
     function applyTheme(p, bg) { document.documentElement.style.setProperty('--tema', p); document.documentElement.style.setProperty('--fondo', bg); }
+
+    function editRoomName() {
+        const nuevoNombre = prompt("Nuevo nombre para la sala:", document.getElementById('display-room-name').innerText);
+        if(nuevoNombre) db.ref('salas/' + currentRoom).update({ customTitle: nuevoNombre });
+    }
 
     function accessRoom() {
         const name = document.getElementById('room-name').value.trim().toLowerCase();
@@ -218,7 +252,7 @@
             if(d && d.password === pass) startSession(name);
             else if(!d) {
                 if(confirm("¿Crear esta nueva sala?")) {
-                    db.ref('salas/' + name).set({ password: pass, theme: '#34495e', bg: '#f4f7f6' });
+                    db.ref('salas/' + name).set({ password: pass, theme: '#34495e', bg: '#f4f7f6', customTitle: name });
                     startSession(name);
                 }
             } else alert("Contraseña incorrecta");
@@ -229,12 +263,14 @@
         currentRoom = name;
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('main-content').style.display = 'block';
-        document.getElementById('display-room-name').innerText = name.toUpperCase();
         document.querySelectorAll('.icon-btn').forEach(btn => btn.style.display = 'flex');
         
         db.ref('salas/' + currentRoom).on('value', snap => {
             const d = snap.val();
-            if(d && d.theme) applyTheme(d.theme, d.bg);
+            if(d) {
+                if(d.theme) applyTheme(d.theme, d.bg);
+                document.getElementById('display-room-name').innerText = (d.customTitle || currentRoom).toUpperCase();
+            }
         });
 
         db.ref('canciones/' + currentRoom).on('value', (snap) => {
@@ -250,9 +286,50 @@
         const m = document.getElementById('song-mood').value;
         if (!n || !u) return;
         const idV = u.includes('v=') ? u.split('v=')[1].substring(0,11) : u.split('/').pop().split('?')[0];
-        db.ref('canciones/' + currentRoom).push({ name: n, url: u, mood: m, img: `https://img.youtube.com/vi/${idV}/mqdefault.jpg` });
-        document.getElementById('song-name').value = ''; document.getElementById('song-url').value = '';
-        toggleAddForm();
+        const imgUrl = `https://img.youtube.com/vi/${idV}/mqdefault.jpg`;
+
+        if (editingSongId) {
+            db.ref('canciones/' + currentRoom + '/' + editingSongId).update({ name: n, url: u, mood: m, img: imgUrl });
+            editingSongId = null;
+            document.getElementById('form-title').innerText = 'NUEVA CANCIÓN';
+        } else {
+            db.ref('canciones/' + currentRoom).push({ name: n, url: u, mood: m, img: imgUrl, comment: "" });
+        }
+
+        document.getElementById('song-name').value = ''; 
+        document.getElementById('song-url').value = '';
+        document.getElementById('add-form').style.display = 'none';
+        document.getElementById('add-btn-toggle').innerText = '+';
+    }
+
+    function editSongInfo(id) {
+        const song = allSongs.find(s => s.id === id);
+        if(!song) return;
+        
+        document.getElementById('song-name').value = song.name;
+        document.getElementById('song-url').value = song.url;
+        document.getElementById('song-mood').value = song.mood;
+        
+        editingSongId = id;
+        document.getElementById('form-title').innerText = 'EDITAR CANCIÓN';
+        
+        document.getElementById('add-form').style.display = 'block';
+        document.getElementById('add-btn-toggle').innerText = '✕';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function addComment(id, currentComment) {
+        const msg = prompt("Escribe un comentario sobre esta canción:", currentComment || "");
+        if (msg !== null) db.ref('canciones/' + currentRoom + '/' + id).update({ comment: msg });
+    }
+
+    function toggleActions(btn) {
+        // Cierra los menús de otras canciones abiertas
+        document.querySelectorAll('.song-card.active-actions').forEach(card => {
+            if (card !== btn.closest('.song-card')) card.classList.remove('active-actions');
+        });
+        // Abre/Cierra el menú de la canción seleccionada
+        btn.closest('.song-card').classList.toggle('active-actions');
     }
 
     function render() {
@@ -260,8 +337,6 @@
         const count = document.getElementById('total-count');
         const playAllBtn = document.getElementById('play-all-btn');
         const searchTerm = document.getElementById('search-input').value.toLowerCase();
-        
-        // OPTIMIZACIÓN: Fragmento de documento para minimizar reflujos del navegador
         const fragment = document.createDocumentFragment();
         
         const filteredSongs = allSongs.filter(s => s.name.toLowerCase().includes(searchTerm));
@@ -270,8 +345,9 @@
         count.innerText = allSongs.length + (allSongs.length === 1 ? " CANCIÓN" : " CANCIONES");
 
         if (allSongs.length > 0) {
-            const ids = allSongs.map(s => s.url.includes('v=') ? s.url.split('v=')[1].substring(0,11) : s.url.split('/').pop().split('?')[0]);
-            playAllBtn.href = `https://www.youtube.com/watch_videos?video_ids=${ids.slice(0, 50).join(',')}`;
+            let randomSongs = [...allSongs].sort(() => 0.5 - Math.random()).slice(0, 50);
+            const ids = randomSongs.map(s => s.url.includes('v=') ? s.url.split('v=')[1].substring(0,11) : s.url.split('/').pop().split('?')[0]);
+            playAllBtn.href = `https://www.youtube.com/watch_videos?video_ids=${ids.join(',')}`;
             playAllBtn.style.display = 'inline-block';
         }
 
@@ -290,15 +366,27 @@
             
             const card = document.createElement('div');
             card.className = `song-card ${s.mood}`;
-            // OPTIMIZACIÓN: Lazy loading nativo para las miniaturas
             card.innerHTML = `
-                <img src="${s.img}" loading="lazy" width="45" height="45">
-                <div class="song-info">
-                    <a href="${s.url}" target="_blank" style="text-decoration:none; color:inherit;">
-                        <b>${s.name}</b>
-                    </a>
+                <div class="song-main">
+                    <img src="${s.img}" loading="lazy" width="45" height="45">
+                    <div class="song-info">
+                        <a href="${s.url}" target="_blank" style="text-decoration:none; color:inherit;">
+                            <b>${s.name}</b>
+                        </a>
+                    </div>
+                    
+                    <div class="actions-wrapper">
+                        <button class="mobile-options" onclick="toggleActions(this)">⋮</button>
+                        <div class="action-btns">
+                            <button class="action-btn" style="color:#999;" onclick="editSongInfo('${s.id}')" title="Editar">✏️</button>
+                            <button class="action-btn" style="color:#bbb;" onclick="eliminar('${s.id}')" title="Eliminar">✕</button>
+                        </div>
+                    </div>
+
                 </div>
-                <button style="background:none; border:none; color:#eee; cursor:pointer; font-size:12px; margin-left:10px;" onclick="eliminar('${s.id}')">✕</button>
+                <div class="comment-display" onclick="addComment('${s.id}', '${s.comment || ""}')">
+                    ${s.comment ? '💬 ' + s.comment : '+ Añadir comentario...'}
+                </div>
             `;
             fragment.appendChild(card);
         });
