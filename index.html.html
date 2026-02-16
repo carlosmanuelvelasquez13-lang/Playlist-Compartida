@@ -29,10 +29,43 @@
 
         .room-title { font-family: 'Dancing Script', cursive; font-size: 1.8rem; color: var(--tema); margin: 0; }
         
-        /* CONTADOR */
-        #total-count { font-size: 0.65em; letter-spacing: 2px; opacity: 0.5; font-weight: 600; margin-bottom: 20px; text-transform: uppercase; }
+        #total-count { font-size: 0.65em; letter-spacing: 2px; opacity: 0.5; font-weight: 600; margin-bottom: 15px; text-transform: uppercase; }
 
-        /* LEYENDA DE COLORES */
+        /* BUSCADOR COMPACTO Y CENTRADO */
+        .search-container { 
+            display: flex; 
+            justify-content: center; 
+            margin-bottom: 20px; 
+        }
+        .search-box {
+            position: relative;
+            width: 85%; /* Más pequeño para centrar visualmente */
+        }
+        .input-search { 
+            width: 100%; 
+            padding: 10px 15px 10px 35px; /* Espacio para la lupa */
+            border-radius: 25px; 
+            border: 1px solid #eee; 
+            background: #fafafa; 
+            font-family: 'Poppins'; 
+            font-size: 0.75em; 
+            outline: none; 
+            transition: 0.3s;
+            box-sizing: border-box;
+        }
+        .input-search:focus { border-color: var(--tema); background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        
+        /* ICONO DE LUPA */
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8em;
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
         .legend { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; font-size: 0.55em; font-weight: 600; opacity: 0.7; }
         .legend-item { display: flex; align-items: center; gap: 3px; }
         .dot-l { width: 8px; height: 8px; border-radius: 50%; }
@@ -127,6 +160,13 @@
         </div>
 
         <div id="total-count">0 CANCIONES</div>
+
+        <div class="search-container">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="search-input" class="input-search" placeholder="Buscar canción..." oninput="render()">
+            </div>
+        </div>
         
         <div id="add-form">
             <input type="text" id="song-name" class="input-formal" placeholder="Nombre canción">
@@ -225,16 +265,19 @@
     function render() {
         const list = document.getElementById('playlist');
         const count = document.getElementById('total-count');
-        list.innerHTML = '';
-        allSongs.sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
+        const searchTerm = document.getElementById('search-input').value.toLowerCase();
         
-        // ACTUALIZACIÓN DEL CONTADOR
+        list.innerHTML = '';
+        const filteredSongs = allSongs.filter(s => s.name.toLowerCase().includes(searchTerm));
+        filteredSongs.sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
+        
         count.innerText = allSongs.length + (allSongs.length === 1 ? " CANCIÓN" : " CANCIONES");
 
         let currentLetter = "";
-        allSongs.forEach(s => {
+        filteredSongs.forEach(s => {
             let firstChar = s.name.charAt(0).toUpperCase();
             let displayLetter = /^[A-Z]$/.test(firstChar) ? firstChar : "#";
+            
             if (displayLetter !== currentLetter) {
                 currentLetter = displayLetter;
                 const div = document.createElement('div');
@@ -242,6 +285,7 @@
                 div.innerText = currentLetter;
                 list.appendChild(div);
             }
+            
             const card = document.createElement('div');
             card.className = `song-card ${s.mood}`;
             card.innerHTML = `<img src="${s.img}"><div class="song-info"><a href="${s.url}" target="_blank" style="text-decoration:none; color:inherit;"><b>${s.name}</b></a></div><button style="background:none; border:none; color:#ddd; cursor:pointer;" onclick="eliminar('${s.id}')">✕</button>`;
