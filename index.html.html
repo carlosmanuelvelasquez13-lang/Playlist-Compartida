@@ -77,6 +77,7 @@
         .song-card { 
             display: flex; align-items: center; gap: 15px; padding: 12px; border-radius: 16px; 
             background: #fff; border: 1px solid #f0f0f0; transition: 0.2s;
+            position: relative;
         }
         .song-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
         .song-card img.thumb { width: 60px; height: 60px; border-radius: 12px; object-fit: cover; }
@@ -104,7 +105,19 @@
         
         .icon-btn { position: fixed; bottom: 25px; cursor: pointer; background: white; width: 55px; height: 55px; border-radius: 50%; display: none; align-items: center; justify-content: center; box-shadow: 0 5px 20px rgba(0,0,0,0.15); z-index: 1000; border: none; font-size: 22px; }
 
-        /* MEJORAS PARA TELÉFONO */
+        /* NUEVOS ESTILOS PARA CARTAS */
+        .card-note {
+            background: #fff9c4; padding: 15px; border-radius: 15px; margin-bottom: 15px;
+            text-align: left; position: relative; border: 1px solid #fbc02d;
+            box-shadow: 3px 3px 10px rgba(0,0,0,0.05);
+        }
+        .card-note b { color: #f57f17; display: block; margin-bottom: 5px; }
+        .multi-select-area {
+            background: #f9f9f9; padding: 10px; border-radius: 10px; border: 1px solid #eee; margin-bottom: 10px;
+            max-height: 100px; overflow-y: auto; text-align: left;
+        }
+        .multi-option { display: block; font-size: 0.8rem; margin-bottom: 3px; cursor: pointer; }
+
         @media (max-width: 600px) { 
             .grid-section { grid-template-columns: 1fr; }
             .container { padding: 20px 15px; border-radius: 20px; }
@@ -160,16 +173,20 @@
                 <label id="form-label" style="font-weight: 800; font-size: 0.7rem; color: var(--tema);">AÑADIR CANCIÓN</label>
                 <input type="text" id="song-name" class="input-formal" placeholder="Nombre de la Canción - Artista">
                 <input type="text" id="song-url" class="input-formal" placeholder="Enlace de YouTube">
+                <input type="text" id="song-message" class="input-formal" placeholder="Mensaje especial o dedicatoria (opcional)">
                 
+                <div style="margin-bottom: 10px;">
+                    <label style="font-size: 0.7rem; font-weight: bold;">Participar en listas:</label>
+                    <div id="multi-list-selector" class="multi-select-area">
+                        </div>
+                </div>
+
                 <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                     <select id="song-mood" class="input-formal" style="margin-bottom:0;">
                         <option value="pienso">Pienso en ti 💭</option>
                         <option value="gusta" selected>Me gusta 👍</option>
                         <option value="deprime">Me deprime 💙</option>
                         <option value="favorita">Mi Favorita ❤️</option>
-                    </select>
-                    <select id="song-list-select" class="input-formal" style="margin-bottom:0;">
-                        <option value="general">Lista General</option>
                     </select>
                 </div>
 
@@ -188,15 +205,26 @@
         </div>
 
         <div id="config-view" class="view">
-            <h2 style="font-family:'Dancing Script'; color:var(--tema); font-size:2rem;">Ajustes de Sala</h2>
+            <h2 style="font-family:'Dancing Script'; color:var(--tema); font-size:2rem;">Ajustes y Notas</h2>
             
+            <div style="background: white; padding: 15px; border-radius: 20px; border: 1px solid #eee; margin-bottom: 20px;">
+                <h3 style="font-size: 1rem; margin-top: 0;">Dejar una Carta / Nota</h3>
+                <input type="text" id="note-author" class="input-formal" placeholder="Nombre del Autor">
+                <textarea id="note-text" class="input-formal" style="height: 80px;" placeholder="Escribe tu carta aquí..."></textarea>
+                <select id="note-song-select" class="input-formal">
+                    <option value="">Seleccionar una canción para la nota</option>
+                </select>
+                <button class="btn-tema" onclick="saveNote()">Publicar Nota</button>
+                <div id="notes-container" style="margin-top: 20px;"></div>
+            </div>
+
             <div style="text-align: left; margin-bottom: 20px;">
                 <label style="font-size: 0.8rem; font-weight: 700;">Nombre de la Sala:</label>
                 <input type="text" id="edit-room-name-input" class="input-formal" placeholder="Nuevo nombre">
                 <button class="btn-tema" style="padding: 8px;" onclick="renameRoom()">Actualizar Nombre</button>
             </div>
 
-            <p style="font-size: 0.8rem; color: #666; font-weight: bold;">Personalizar Colores (12 opciones):</p>
+            <p style="font-size: 0.8rem; color: #666; font-weight: bold;">Personalizar Colores:</p>
             <div id="color-palette">
                 <div class="color-dot" style="background:#34495e;" onclick="updateRoomTheme('#34495e', '#f4f7f6')"></div>
                 <div class="color-dot" style="background:#e74c3c;" onclick="updateRoomTheme('#e74c3c', '#fdf2f2')"></div>
@@ -228,7 +256,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         
-        let currentRoom = "", myNick = "", allSongs = [], allLists = [], editingId = null, currentFilterList = "";
+        let currentRoom = "", myNick = "", allSongs = [], allLists = [], editingId = null, currentFilterList = "general";
 
         window.onload = () => {
             const savedNick = localStorage.getItem('playlist_user_nick');
@@ -288,16 +316,22 @@
                 allSongs = d ? Object.keys(d).map(k => ({ id: k, ...d[k] })) : [];
                 document.getElementById('total-songs-count').innerText = allSongs.length;
                 renderSongs();
+                updateNoteSongSelect();
             });
 
             db.ref(`listas/${currentRoom}`).on('value', snap => {
                 const d = snap.val();
                 allLists = d ? Object.keys(d).map(k => ({ id: k, ...d[k] })) : [];
                 document.getElementById('total-lists-count').innerText = allLists.length + 1;
-                if(!currentFilterList) currentFilterList = "general";
                 renderLists();
                 renderChips();
-                updateListSelector();
+                updateMultiListSelector();
+            });
+
+            db.ref(`notas/${currentRoom}`).on('value', snap => {
+                const d = snap.val();
+                const notes = d ? Object.keys(d).map(k => ({ id: k, ...d[k] })) : [];
+                renderNotes(notes);
             });
         }
 
@@ -323,11 +357,20 @@
             showView('config-view');
         }
 
-        function updateListSelector() {
-            const select = document.getElementById('song-list-select');
-            let options = '<option value="general">Lista General</option>';
+        function updateMultiListSelector() {
+            const container = document.getElementById('multi-list-selector');
+            let html = `<label class="multi-option"><input type="checkbox" value="general" checked> Lista General</label>`;
             allLists.forEach(l => {
-                options += `<option value="${l.id}">${l.name}</option>`;
+                html += `<label class="multi-option"><input type="checkbox" value="${l.id}"> ${l.name}</label>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function updateNoteSongSelect() {
+            const select = document.getElementById('note-song-select');
+            let options = '<option value="">Seleccionar una canción para la nota</option>';
+            allSongs.forEach(s => {
+                options += `<option value="${s.id}">${s.name}</option>`;
             });
             select.innerHTML = options;
         }
@@ -337,33 +380,15 @@
             if(name) db.ref(`listas/${currentRoom}`).push({ name: name, createdBy: myNick });
         }
 
-        function addSongToList(listId) {
-            showView('main-content');
-            if(document.getElementById('add-form').style.display === 'none') toggleAddForm();
-            document.getElementById('song-list-select').value = listId;
-            window.scrollTo(0,0);
-        }
-
-        function moveSongToList(songId) {
-            let options = "0: Lista General\n";
-            allLists.forEach((l, index) => { options += `${index + 1}: ${l.name}\n`; });
-            const choice = prompt("Mover a:\n" + options);
-            if (choice !== null) {
-                let targetListId = "general";
-                if (choice !== "0") {
-                    const idx = parseInt(choice) - 1;
-                    if (allLists[idx]) targetListId = allLists[idx].id;
-                    else return alert("Opción no válida");
-                }
-                db.ref(`canciones/${currentRoom}/${songId}`).update({ listId: targetListId });
-            }
-        }
-
         function deleteList(id) {
-            if(confirm("¿Eliminar lista? Las canciones volverán a 'General'")) {
+            if(confirm("¿Eliminar lista?")) {
                 db.ref(`listas/${currentRoom}/${id}`).remove();
                 allSongs.forEach(s => {
-                    if(s.listId === id) db.ref(`canciones/${currentRoom}/${s.id}`).update({ listId: 'general' });
+                    if(s.listIds && s.listIds.includes(id)) {
+                        const newLists = s.listIds.filter(lid => lid !== id);
+                        if(newLists.length === 0) newLists.push('general');
+                        db.ref(`canciones/${currentRoom}/${s.id}`).update({ listIds: newLists });
+                    }
                 });
             }
         }
@@ -372,14 +397,10 @@
             const container = document.getElementById('manager-list-container');
             container.innerHTML = `<div style="background:white; padding:15px; border-radius:15px; display:flex; justify-content:space-between; align-items:center; border:1px solid #eee;">
                     <span><b>Lista General</b></span>
-                    <button onclick="addSongToList('general')" style="background:#4cd137; border:none; color:white; cursor:pointer; width:30px; height:30px; border-radius:50%; font-weight:bold;">+</button>
                 </div>` + allLists.map(l => `
                 <div style="background:white; padding:15px; border-radius:15px; display:flex; justify-content:space-between; align-items:center; border:1px solid #eee;">
                     <span><b>${l.name}</b></span>
-                    <div style="display:flex; gap:10px;">
-                        <button onclick="addSongToList('${l.id}')" style="background:#4cd137; border:none; color:white; cursor:pointer; width:30px; height:30px; border-radius:50%; font-weight:bold;">+</button>
-                        <button onclick="deleteList('${l.id}')" style="background:none; border:none; color:red; cursor:pointer;">✕</button>
-                    </div>
+                    <button onclick="deleteList('${l.id}')" style="background:none; border:none; color:red; cursor:pointer;">✕</button>
                 </div>
             `).join('');
         }
@@ -387,9 +408,9 @@
         function renderChips() {
             const container = document.getElementById('playlists-chips');
             let html = `<button class="playlist-chip ${currentFilterList === 'general' ? 'active' : ''}" onclick="filterByList('general')">General</button>`;
-            html += allLists.map(l => `
-                <button class="playlist-chip ${currentFilterList === l.id ? 'active' : ''}" onclick="filterByList('${l.id}')">${l.name}</button>
-            `).join('');
+            allLists.forEach(l => {
+                html += `<button class="playlist-chip ${currentFilterList === l.id ? 'active' : ''}" onclick="filterByList('${l.id}')">${l.name}</button>`;
+            });
             container.innerHTML = html;
         }
 
@@ -402,8 +423,14 @@
         function renderSongs() {
             const container = document.getElementById('playlist');
             const search = document.getElementById('search-input').value.toLowerCase();
-            let filtered = allSongs.filter(s => s.name.toLowerCase().includes(search));
-            filtered = filtered.filter(s => (s.listId || 'general') === currentFilterList);
+            
+            // Filtrar canciones que pertenezcan a la lista seleccionada (ahora revisando el array listIds)
+            let filtered = allSongs.filter(s => {
+                const matchesSearch = s.name.toLowerCase().includes(search);
+                const listIds = s.listIds || ['general'];
+                const matchesList = listIds.includes(currentFilterList);
+                return matchesSearch && matchesList;
+            });
             
             filtered.sort((a, b) => a.name.localeCompare(b.name));
             const groups = {};
@@ -429,12 +456,12 @@
                                 <img src="${s.img}" class="thumb">
                                 <div style="flex:1; min-width:0; text-align:left;">
                                     <b style="font-size:0.85em; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s.name}</b>
-                                    <small style="font-size:0.65em; color:#999;">De: ${s.addedBy}</small>
+                                    <small style="font-size:0.65em; color:#999; display:block;">De: ${s.addedBy}</small>
+                                    ${s.message ? `<p style="font-size:0.7rem; font-style:italic; margin: 4px 0; color:var(--tema);">" ${s.message} "</p>` : ''}
                                     <div class="compact-actions">
                                         <a href="${s.url}" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" class="mini-social-icon"></a>
                                         <a href="https://open.spotify.com/search/${encodeURIComponent(s.name)}" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/174/174872.png" class="mini-social-icon"></a>
                                         <div style="width:1px; height:12px; background:#ddd;"></div>
-                                        <button class="action-btn-mini" onclick="moveSongToList('${s.id}')" title="Mover">📂</button>
                                         <button class="action-btn-mini" onclick="editSong('${s.id}')">✏️</button>
                                         <button class="action-btn-mini" onclick="eliminarCancion('${s.id}')" style="color:#ff7675;">✕</button>
                                     </div>
@@ -449,13 +476,23 @@
         function saveSong() {
             const n = document.getElementById('song-name').value.trim();
             const u = document.getElementById('song-url').value.trim();
+            const msg = document.getElementById('song-message').value.trim();
             const m = document.getElementById('song-mood').value;
-            const lId = document.getElementById('song-list-select').value;
+            
+            const selectedLists = Array.from(document.querySelectorAll('#multi-list-selector input:checked')).map(cb => cb.value);
+            if(selectedLists.length === 0) selectedLists.push('general');
+
             if(!n || !u) return;
             let idV = u.includes('v=') ? u.split('v=')[1].substring(0,11) : u.split('/').pop().split('?')[0];
-            const data = { name: n, url: u, mood: m, addedBy: myNick, img: `https://img.youtube.com/vi/${idV}/mqdefault.jpg`, listId: lId };
+            const data = { 
+                name: n, url: u, mood: m, message: msg, addedBy: myNick, 
+                img: `https://img.youtube.com/vi/${idV}/mqdefault.jpg`, 
+                listIds: selectedLists 
+            };
+            
             if(editingId) db.ref(`canciones/${currentRoom}/${editingId}`).update(data);
             else db.ref(`canciones/${currentRoom}`).push(data);
+            
             cancelEdit();
             toggleAddForm();
         }
@@ -465,8 +502,14 @@
             editingId = id;
             document.getElementById('song-name').value = s.name;
             document.getElementById('song-url').value = s.url;
+            document.getElementById('song-message').value = s.message || '';
             document.getElementById('song-mood').value = s.mood;
-            document.getElementById('song-list-select').value = s.listId || 'general';
+            
+            const checks = document.querySelectorAll('#multi-list-selector input');
+            checks.forEach(cb => {
+                cb.checked = s.listIds ? s.listIds.includes(cb.value) : (cb.value === 'general');
+            });
+
             document.getElementById('form-label').innerText = "EDITAR CANCIÓN";
             document.getElementById('cancel-btn').style.display = "block";
             document.getElementById('add-form').style.display = "block";
@@ -477,8 +520,42 @@
             editingId = null;
             document.getElementById('song-name').value = '';
             document.getElementById('song-url').value = '';
+            document.getElementById('song-message').value = '';
             document.getElementById('form-label').innerText = "AÑADIR CANCIÓN";
             document.getElementById('cancel-btn').style.display = "none";
+            updateMultiListSelector();
+        }
+
+        function saveNote() {
+            const author = document.getElementById('note-author').value.trim();
+            const text = document.getElementById('note-text').value.trim();
+            const songId = document.getElementById('note-song-select').value;
+            if(!author || !text) return alert("Escribe tu nombre y el mensaje");
+            
+            const song = allSongs.find(s => s.id === songId) || null;
+            db.ref(`notas/${currentRoom}`).push({
+                author, text, song, date: new Date().toLocaleString()
+            });
+            document.getElementById('note-author').value = '';
+            document.getElementById('note-text').value = '';
+        }
+
+        function renderNotes(notes) {
+            const container = document.getElementById('notes-container');
+            container.innerHTML = notes.reverse().map(n => `
+                <div class="card-note">
+                    <b>${n.author}</b>
+                    <p style="margin:5px 0; font-size:0.9rem;">${n.text}</p>
+                    ${n.song ? `
+                        <div style="display:flex; align-items:center; gap:10px; background:rgba(255,255,255,0.5); padding:5px; border-radius:10px; border:1px solid #fbc02d;">
+                            <img src="${n.song.img}" style="width:30px; height:30px; border-radius:5px;">
+                            <small style="font-weight:bold; font-size:0.7rem;">🎵 ${n.song.name}</small>
+                        </div>
+                    ` : ''}
+                    <small style="display:block; text-align:right; font-size:0.6rem; margin-top:5px; opacity:0.6;">${n.date}</small>
+                    <button onclick="db.ref('notas/${currentRoom}/${n.id}').remove()" style="position:absolute; top:5px; right:5px; background:none; border:none; color:red; cursor:pointer;">✕</button>
+                </div>
+            `).join('');
         }
 
         function showView(viewId) {
@@ -500,7 +577,7 @@
         }
 
         function playRandomMix() {
-            let list = allSongs.filter(s => (s.listId || 'general') === currentFilterList);
+            let list = allSongs.filter(s => (s.listIds || ['general']).includes(currentFilterList));
             if(list.length === 0) return alert("No hay canciones en esta lista");
             const ids = list.sort(() => 0.5 - Math.random()).slice(0, 50).map(x => 
                 x.url.includes('v=') ? x.url.split('v=')[1].substring(0,11) : x.url.split('/').pop().split('?')[0]
