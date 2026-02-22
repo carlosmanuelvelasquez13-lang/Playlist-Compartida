@@ -54,6 +54,20 @@
             font-size: 0.7rem; color: var(--tema);
         }
 
+        /* NUEVOS ESTILOS: HISTORIAL DE COLABORADORES */
+        .history-panel {
+            background: #fff; border-radius: 15px; padding: 15px; margin-bottom: 20px;
+            border: 1px solid #eee; text-align: left;
+        }
+        .history-title { font-size: 0.75rem; font-weight: 800; color: var(--tema); text-transform: uppercase; margin-bottom: 10px; display: block; }
+        .history-list { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; }
+        .history-item { 
+            min-width: 140px; background: #f9f9f9; padding: 8px; border-radius: 10px; font-size: 0.7rem;
+            border-left: 3px solid var(--tema);
+        }
+        .history-item b { display: block; color: var(--texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .history-item span { color: #888; }
+
         /* PALETA DE 12 COLORES MEJORADA */
         #color-palette {
             display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px;
@@ -105,7 +119,6 @@
         
         .icon-btn { position: fixed; bottom: 25px; cursor: pointer; background: white; width: 55px; height: 55px; border-radius: 50%; display: none; align-items: center; justify-content: center; box-shadow: 0 5px 20px rgba(0,0,0,0.15); z-index: 1000; border: none; font-size: 22px; }
 
-        /* NUEVOS ESTILOS PARA CARTAS */
         .card-note {
             background: #fff9c4; padding: 15px; border-radius: 15px; margin-bottom: 15px;
             text-align: left; position: relative; border: 1px solid #fbc02d;
@@ -164,6 +177,13 @@
             <div id="users-connected" class="users-list"></div>
 
             <button class="btn-tema" style="width:auto; padding:8px 20px; font-size:0.8em; border-radius:30px; margin-bottom: 20px; margin-top:10px;" onclick="playRandomMix()">▶️ MIX RANDOM</button>
+
+            <div class="history-panel">
+                <span class="history-title">🕒 Últimas adiciones</span>
+                <div id="collab-history" class="history-list">
+                    <p style="font-size:0.7rem; color:#999;">Aún no hay actividad...</p>
+                </div>
+            </div>
 
             <div id="playlists-chips" style="display:flex; gap:8px; justify-content:center; margin-bottom:15px; overflow-x:auto; padding: 5px;"></div>
 
@@ -316,6 +336,7 @@
                 allSongs = d ? Object.keys(d).map(k => ({ id: k, ...d[k] })) : [];
                 document.getElementById('total-songs-count').innerText = allSongs.length;
                 renderSongs();
+                renderCollabHistory(); // Renderizar historial cada vez que cambian canciones
                 updateNoteSongSelect();
             });
 
@@ -333,6 +354,23 @@
                 const notes = d ? Object.keys(d).map(k => ({ id: k, ...d[k] })) : [];
                 renderNotes(notes);
             });
+        }
+
+        function renderCollabHistory() {
+            const container = document.getElementById('collab-history');
+            if(allSongs.length === 0) {
+                container.innerHTML = `<p style="font-size:0.7rem; color:#999;">Aún no hay actividad...</p>`;
+                return;
+            }
+            // Obtenemos las últimas 8 añadidas (asumiendo que Firebase las devuelve o las ordenamos por ID/timestamp si existiera)
+            // Como no hay timestamp explícito, usamos el orden de inserción de Firebase (reversa)
+            const recent = [...allSongs].reverse().slice(0, 8);
+            container.innerHTML = recent.map(s => `
+                <div class="history-item">
+                    <b>${s.name}</b>
+                    <span>por ${s.addedBy || 'Anónimo'}</span>
+                </div>
+            `).join('');
         }
 
         function renameRoom() {
@@ -424,7 +462,6 @@
             const container = document.getElementById('playlist');
             const search = document.getElementById('search-input').value.toLowerCase();
             
-            // Filtrar canciones que pertenezcan a la lista seleccionada (ahora revisando el array listIds)
             let filtered = allSongs.filter(s => {
                 const matchesSearch = s.name.toLowerCase().includes(search);
                 const listIds = s.listIds || ['general'];
@@ -456,7 +493,7 @@
                                 <img src="${s.img}" class="thumb">
                                 <div style="flex:1; min-width:0; text-align:left;">
                                     <b style="font-size:0.85em; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s.name}</b>
-                                    <small style="font-size:0.65em; color:#999; display:block;">De: ${s.addedBy}</small>
+                                    <small style="font-size:0.65em; color:#999; display:block;">Agregado por: <b>${s.addedBy || 'Anónimo'}</b></small>
                                     ${s.message ? `<p style="font-size:0.7rem; font-style:italic; margin: 4px 0; color:var(--tema);">" ${s.message} "</p>` : ''}
                                     <div class="compact-actions">
                                         <a href="${s.url}" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" class="mini-social-icon"></a>
@@ -484,8 +521,12 @@
 
             if(!n || !u) return;
             let idV = u.includes('v=') ? u.split('v=')[1].substring(0,11) : u.split('/').pop().split('?')[0];
+            
+            // Si estamos editando, mantenemos el autor original a menos que queramos que cambie
+            const existingSong = editingId ? allSongs.find(x => x.id === editingId) : null;
             const data = { 
-                name: n, url: u, mood: m, message: msg, addedBy: myNick, 
+                name: n, url: u, mood: m, message: msg, 
+                addedBy: existingSong ? (existingSong.addedBy || myNick) : myNick, 
                 img: `https://img.youtube.com/vi/${idV}/mqdefault.jpg`, 
                 listIds: selectedLists 
             };
